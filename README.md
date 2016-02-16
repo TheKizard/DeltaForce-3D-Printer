@@ -9,3 +9,5 @@ Both can be used, so a setup with a monitor, keyboard and
 mouse will use axis. While a setup using a remote device,
 like a tablet, will use the mklauncher and Machinekit
 client for Machineface.
+
+This branch contains specialized code for modifying the UI of Machineface for my specific variation!
