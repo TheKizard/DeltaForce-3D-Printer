@@ -10,4 +10,4 @@ mouse will use axis. While a setup using a remote device,
 like a tablet, will use the mklauncher and Machinekit
 client for Machineface.
 
-This branch contains specialized code for modifying the UI of Machineface for my specific variation!
+This branch may contain specialized code for modifying the UI of Machineface for my specific variation!
