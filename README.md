@@ -1,7 +1,5 @@
-###########################################################
-# DeltaForce-3D-Printer                                   #
-# 3D Printer - Linear Delta BBB-Cramps using Machinekit & includes both axis and Machineface setups             #
-###########################################################
+#DeltaForce-3D-Printer#
+#3D Printer - Linear Delta BBB-Cramps using Machinekit & includes both axis and Machineface setups.#
 
 The files contained here are my own personal versions of
 the BBB-CRAMPS linear delta configurations.
