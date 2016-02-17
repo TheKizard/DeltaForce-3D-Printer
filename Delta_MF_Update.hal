@@ -19,27 +19,27 @@ loadusr -W haltalk
 # ###################################
 
 # kinematics
-loadrt trivkins
+loadrt lineardeltakins
+
+# settings for delta printer
+setp lineardeltakins.L [MACHINE]CF_ROD
+setp lineardeltakins.R [MACHINE]DELTA_R
 
 # motion controller, get name and thread periods from ini file
 # trajectory planner
 loadrt tp
-loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=5 num_aio=50 num_dio=20 tp=tp kins=trivkins
-
-# motion controller, get name and thread periods from ini file
-#loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=4 num_aio=50 num_dio=20# [TRAJ]AXES
-
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=lineardeltakins
 
 # load low-level drivers
 loadrt hal_bb_gpio output_pins=816,822,823,824,825,826,914,923,925 input_pins=807,808,809,810,817,911,913
 #loadrt hal_bb_gpio output_pins=826,914,923,925 input_pins=807,808,809,810,817,911,913
 loadrt [PRUCONF](DRIVER) prucode=$(HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG) halname=hpg pru_period=5000
-
+loadrt pid count=2
+loadrt limit1 count=2
 
 # Python user-mode HAL module to read ADC value and generate a thermostat output for PWM
 # c = analog input channel and thermistor table
 loadusr -Wn Therm hal_temp_bbb -n Therm -c 04:[HBP]THERMISTOR,05:[EXTRUDER_0]THERMISTOR -b [CAPE]BOARD
-
 
 # other components
 loadrt pid names=pid.e0-temp,pid.hbp-temp
@@ -50,10 +50,8 @@ loadrt not names=not.e0-temp-range,not.hbp-temp-range,not.e0-error,not.hbp-error
 loadrt wcomp names=wcomp.e0-temp-range,wcomp.hbp-temp-range,wcomp.e0-temp-limit,wcomp.hbp-temp-limit
 loadrt lowpass names=lowpass.e0-temp,lowpass.hbp-temp
 loadrt sum2 names=sum2.e0-temp-range-neg,sum2.e0-temp-range-pos,sum2.hbp-temp-range-neg,sum2.hbp-temp-range-pos
-#loadrt mux2 names=mux2.exp0-pwm,mux2.exp0-val
 loadrt mux2 names=mux2.exp0-val
 loadrt logic names=estopchain,and3.e0-no-error,and3.hbp-no-error personality=0x106,0x103,0x103 # and 6 and 3 inputs
-#loadrt comp names=comp.exp0-temp,comp.e0-active,comp.e0-val-set,comp.e0-temp,comp.hbp-active
 loadrt comp names=comp.e0-active,comp.e0-val-set,comp.e0-temp,comp.hbp-active
 loadrt and2 names=and2.e0temp-val-50-act,and2.e0temp-80-act
 loadrt or2 names=or2.e0-fan-act
@@ -148,21 +146,6 @@ newcomp fdm-f1 timer=100
 newpin fdm-f1 fdm-f1.set float io
 ready fdm-f1
 
-#newcomp fdm-f2 timer=100
-#newpin fdm-f2 fdm-f2.set float io
-#ready fdm-f2
-
-#newcomp fdm-f3 timer=100
-#newpin fdm-f3 fdm-f3.set float io
-#ready fdm-f3
-
-#newcomp fdm-l0 timer=100
-#newpin fdm-l0 fdm-l0.r float io
-#newpin fdm-l0 fdm-l0.g float io
-#newpin fdm-l0 fdm-l0.b float io
-#newpin fdm-l0 fdm-l0.w float io
-#ready  fdm-l0
-
 newcomp fdm-e0-pid timer=100
 newpin fdm-e0-pid fdm-e0-pid.Pgain              float io
 newpin fdm-e0-pid fdm-e0-pid.Igain              float io
@@ -213,8 +196,6 @@ setp hpg.stepgen.00.position-scale  [AXIS_0]SCALE
 
 setp hpg.stepgen.00.maxvel          [AXIS_0]STEPGEN_MAX_VEL
 setp hpg.stepgen.00.maxaccel        [AXIS_0]STEPGEN_MAX_ACC
-
-#setp hpg.stepgen.00.step_type       0
 
 #setp hpg.stepgen.00.step_type       0
 setp hpg.stepgen.00.steppin         [AXIS_0]STEPPIN
@@ -383,15 +364,15 @@ setp bb_gpio.p9.in-13.invert 1
 
 # Uncomment if you actually have limit switches setup
 # You probably want to setup homing in the INI file, as well
-net limit-x-min => axis.0.home-sw-in
+#net limit-x-min => axis.0.home-sw-in
 #net limit-x-min => axis.0.neg-lim-sw-in
-#net limit-x-max => axis.0.pos-lim-sw-in
-net limit-y-min => axis.1.home-sw-in
+net limit-x-max => axis.0.pos-lim-sw-in
+#net limit-y-min => axis.1.home-sw-in
 #net limit-y-min => axis.1.neg-lim-sw-in
-#net limit-y-max => axis.1.pos-lim-sw-in
-net limit-z-min => axis.2.home-sw-in
+net limit-y-max => axis.1.pos-lim-sw-in
+#net limit-z-min => axis.2.home-sw-in
 #net limit-z-min => axis.2.neg-lim-sw-in
-#net limit-z-max => axis.2.pos-lim-sw-in
+net limit-z-max => axis.2.pos-lim-sw-in
 
 # ################
 # Servo signals
