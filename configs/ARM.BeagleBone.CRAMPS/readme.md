@@ -1,4 +1,3 @@
-
 #DeltaForce 3D Printer#
 
 This configuration drives a custom design linear delta 4-axis 3D printer using the PRU for
