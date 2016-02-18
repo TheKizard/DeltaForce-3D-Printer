@@ -28,14 +28,14 @@ setp lineardeltakins.R [MACHINE]DELTA_R
 # motion controller, get name and thread periods from ini file
 # trajectory planner
 loadrt tp
-loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=lineardeltakins
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=5 num_aio=50 num_dio=20 tp=tp kins=lineardeltakins
 
 # load low-level drivers
 loadrt hal_bb_gpio output_pins=816,822,823,824,825,826,914,923,925 input_pins=807,808,809,810,817,911,913
 #loadrt hal_bb_gpio output_pins=826,914,923,925 input_pins=807,808,809,810,817,911,913
 loadrt [PRUCONF](DRIVER) prucode=$(HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG) halname=hpg pru_period=5000
-loadrt pid count=2
-loadrt limit1 count=2
+#loadrt pid count=2
+#loadrt limit1 count=2
 
 # Python user-mode HAL module to read ADC value and generate a thermostat output for PWM
 # c = analog input channel and thermistor table
@@ -50,8 +50,10 @@ loadrt not names=not.e0-temp-range,not.hbp-temp-range,not.e0-error,not.hbp-error
 loadrt wcomp names=wcomp.e0-temp-range,wcomp.hbp-temp-range,wcomp.e0-temp-limit,wcomp.hbp-temp-limit
 loadrt lowpass names=lowpass.e0-temp,lowpass.hbp-temp
 loadrt sum2 names=sum2.e0-temp-range-neg,sum2.e0-temp-range-pos,sum2.hbp-temp-range-neg,sum2.hbp-temp-range-pos
+#loadrt mux2 names=mux2.exp0-pwm,mux2.exp0-val
 loadrt mux2 names=mux2.exp0-val
 loadrt logic names=estopchain,and3.e0-no-error,and3.hbp-no-error personality=0x106,0x103,0x103 # and 6 and 3 inputs
+#loadrt comp names=comp.exp0-temp,comp.e0-active,comp.e0-val-set,comp.e0-temp,comp.hbp-active
 loadrt comp names=comp.e0-active,comp.e0-val-set,comp.e0-temp,comp.hbp-active
 loadrt and2 names=and2.e0temp-val-50-act,and2.e0temp-80-act
 loadrt or2 names=or2.e0-fan-act
@@ -107,9 +109,7 @@ addf   estopchain                           servo-thread
 # Update functions
 addf    hpg.update                          servo-thread
 addf    bb_gpio.write                       servo-thread
-
 #-----------------------------------------------------
-
 
 # ###################################
 # UI remote component definition
@@ -146,6 +146,21 @@ newcomp fdm-f1 timer=100
 newpin fdm-f1 fdm-f1.set float io
 ready fdm-f1
 
+#newcomp fdm-f2 timer=100
+#newpin fdm-f2 fdm-f2.set float io
+#ready fdm-f2
+
+#newcomp fdm-f3 timer=100
+#newpin fdm-f3 fdm-f3.set float io
+#ready fdm-f3
+
+#newcomp fdm-l0 timer=100
+#newpin fdm-l0 fdm-l0.r float io
+#newpin fdm-l0 fdm-l0.g float io
+#newpin fdm-l0 fdm-l0.b float io
+#newpin fdm-l0 fdm-l0.w float io
+#ready  fdm-l0
+
 newcomp fdm-e0-pid timer=100
 newpin fdm-e0-pid fdm-e0-pid.Pgain              float io
 newpin fdm-e0-pid fdm-e0-pid.Igain              float io
@@ -159,11 +174,9 @@ newpin fdm-e0-pid fdm-e0-pid.feedback           float in
 newpin fdm-e0-pid fdm-e0-pid.output             float in
 ready  fdm-e0-pid
        
-
 # ######################################################
 # Axis-of-motion Specific Configs (not the GUI)
 # ######################################################
-
 
 # ################
 # X [0] Axis
@@ -176,14 +189,12 @@ sets emcmot.00.enable FALSE
 net emcmot.00.enable <= axis.0.amp-enable-out
 net emcmot.00.enable => hpg.stepgen.00.enable
 
-
 # position command and feedback
 net emcmot.00.pos-cmd <= axis.0.motor-pos-cmd
 net emcmot.00.pos-cmd => hpg.stepgen.00.position-cmd
 
 net motor.00.pos-fb <= hpg.stepgen.00.position-fb
 net motor.00.pos-fb => axis.0.motor-pos-fb
-
 
 # timing parameters
 setp hpg.stepgen.00.dirsetup        [AXIS_0]DIRSETUP
@@ -201,7 +212,6 @@ setp hpg.stepgen.00.maxaccel        [AXIS_0]STEPGEN_MAX_ACC
 setp hpg.stepgen.00.steppin         [AXIS_0]STEPPIN
 setp hpg.stepgen.00.dirpin          [AXIS_0]DIRPIN
 
-
 # ################
 # Y [1] Axis
 # ################
@@ -213,14 +223,12 @@ sets emcmot.01.enable FALSE
 net emcmot.01.enable <= axis.1.amp-enable-out
 net emcmot.01.enable => hpg.stepgen.01.enable
 
-
 # position command and feedback
 net emcmot.01.pos-cmd <= axis.1.motor-pos-cmd
 net emcmot.01.pos-cmd => hpg.stepgen.01.position-cmd
 
 net motor.01.pos-fb <= hpg.stepgen.01.position-fb
 net motor.01.pos-fb => axis.1.motor-pos-fb
-
 
 # timing parameters
 setp hpg.stepgen.01.dirsetup        [AXIS_1]DIRSETUP
@@ -238,7 +246,6 @@ setp hpg.stepgen.01.maxaccel        [AXIS_1]STEPGEN_MAX_ACC
 setp hpg.stepgen.01.steppin         [AXIS_1]STEPPIN
 setp hpg.stepgen.01.dirpin          [AXIS_1]DIRPIN
 
-
 # ################
 # Z [2] Axis
 # ################
@@ -250,14 +257,12 @@ sets emcmot.02.enable FALSE
 net emcmot.02.enable <= axis.2.amp-enable-out
 net emcmot.02.enable => hpg.stepgen.02.enable
 
-
 # position command and feedback
 net emcmot.02.pos-cmd <= axis.2.motor-pos-cmd
 net emcmot.02.pos-cmd => hpg.stepgen.02.position-cmd
 
 net motor.02.pos-fb <= hpg.stepgen.02.position-fb
 net motor.02.pos-fb => axis.2.motor-pos-fb
-
 
 # timing parameters
 setp hpg.stepgen.02.dirsetup        [AXIS_2]DIRSETUP
@@ -275,9 +280,8 @@ setp hpg.stepgen.02.maxaccel        [AXIS_2]STEPGEN_MAX_ACC
 setp hpg.stepgen.02.steppin         [AXIS_2]STEPPIN
 setp hpg.stepgen.02.dirpin          [AXIS_2]DIRPIN
 
-
 # ################
-# A [3] Axis (Extruder) - Velocity control
+# A [3] Axis (Extruder) - Not Velocity control
 # ################
 
 # axis enable chain
